@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue.js Word Cloud Generator</title>
+    <link href="./styles.css" rel="stylesheet" type="text/css"/>
+  </head>
+  <body>
+    <head>
+      <h1>Word Cloud Generator</h1>
+    </head>
+    <div id="app">
+      <h2>Enter Text Here</h2>
+      <textarea id="text-box" v-model="text"></textarea>
+      <button v-on:click="generate">Generate</button>
+      <div id="generator" v-html="generatedText"></div>
+    </div>
+    <script type="text/javascript" src="../dist/bundle.js"></script>
+  </body>
