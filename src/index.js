@@ -1,5 +1,6 @@
 import Vue from "vue";
 import vueResource from "vue-resource";
+import commonWords from "./commonWords";
 
 Vue.use(vueResource);
 
@@ -14,9 +15,10 @@ new Vue({
     data: {
         text: "",
         filteredText: [],
-        generatedText: null,
+        generatedText: 0,
         iterator: 0,
-        rankedArr: []
+        rankedArr: [],
+        showLoader: false
     },
     methods: {
         generate: function() {
@@ -25,72 +27,45 @@ new Vue({
             this.generatedText = null;
             this.rankedArr = [];
             if (this.text) {
-                textArr = this.text.split(" ");
-                this.fetchData(textArr, function() {
-                    for (var i = 0; i < vm.filteredText.length; i++) {
-                        if (vm.filteredText[i].length <= 2) {
-                            continue;
-                        }
-                        var sameText = vm.filteredText.filter(function(ele) {
-                            return ele === vm.filteredText[i];
-                        });
-                        if (sameText.length === 1) {
-                            size = "twenty";
-                        }
-                        else if (sameText.length === 2) {
-                            size = "twenty-five";
-                        }
-                        else if (sameText.length === 3) {
-                            size = "thirty"
-                        }
-                        else if (sameText.length >= 4) {
-                            size = "fourty";
-                        }
-                        vm.rankedArr.push({rank: sameText.length, name: vm.filteredText[i], size: size});
-                    }
-                    pEl = "<p>";
-                    for (var j = 0; j < vm.rankedArr.length; j++) {
-                        pEl += "<span id='" + vm.rankedArr[j].size + "'>" + vm.rankedArr[j].name + "</span>" + " ";
-                    }
-                    pEl += "</p>";
-                    vm.generatedText = pEl;
-                });
-            }
-        },
-        fetchData: function(arr, callback) {
-            var vm = this;
-            var defArray = arr;
-            if (vm.iterator > arr.length - 1) {
-                vm.iterator = 0;
-                callback();
-                return;
-            }
-            vm.$http.get("https://wordsapiv1.p.mashape.com/words/" + defArray[vm.iterator], {
-                headers: {
-                    "X-Mashape-Authorization": "RlOyJsySqPmshT7Is7Oz3l2W0qe1p1REBMgjsn5J37VT7XDxKb"
-                }
-            }).then(function(res) {
-                console.log(res)
-                return res.json();
-            }).then(function(json) {
-                if (!json) {
-                    vm.filteredText.push(json.word);
+                this.showLoader = true;
+                textArr = this.text.replace(/[!@#$%^&*?,.:;<>(){}'/]/g, "").replace(/-/g, " ").toLowerCase();
+                textArr = textArr.split(" ");
+                this.filteredText = textArr.filter(function(ele) {
+                    return commonWords.indexOf(ele) === -1;
+                }).sort();
+                if (!this.filteredText.length) {
                     return;
-                } 
-                else if (!json.results) {
-                    vm.iterator++;
-                    vm.filteredText.push(json.word);
-                    return vm.fetchData(defArray, callback);
                 }
-                if (json.results[0].partOfSpeech === "noun" || json.results[0].partOfSpeech === "verb" || json.results[0].partOfSpeech === "adjective") {
-                    vm.filteredText.push(json.word);
+                for (var i = 0; i < this.filteredText.length; i++) {
+                    var sameText = this.filteredText.filter(function(ele) {
+                        return ele === vm.filteredText[i] || ele.indexOf(vm.filteredText[i]) !== -1;
+                    });
+                    if (sameText.length === 1) {
+                        size = "twenty";
+                    }
+                    else if (sameText.length === 2) {
+                        size = "thirty-five";
+                    }
+                    else if (sameText.length === 3) {
+                        size = "fifty-five"
+                    }
+                    else if (sameText.length >= 4) {
+                        size = "seventy";
+                    }
+                    this.rankedArr.push({rank: sameText.length, name: this.filteredText[i], size: size});
+                    this.filteredText = this.filteredText.filter(function(ele) {
+                        return ele !== vm.filteredText[i];
+                    });
+                    i = -1;
                 }
-                vm.iterator++;
-                vm.fetchData(defArray, callback);
-            }).catch(function(err) {
-                vm.iterator++;
-                vm.fetchData(defArray, callback);
-            });
+                pEl = "<p>";
+                for (var j = 0; j < this.rankedArr.length; j++) {
+                    pEl += "<span id='" + this.rankedArr[j].size + "'>" + this.rankedArr[j].name + "</span>" + " ";
+                }
+                pEl += "</p>";
+                this.showLoader = false;
+                this.generatedText = pEl;
+            }
         }
     }
 });
