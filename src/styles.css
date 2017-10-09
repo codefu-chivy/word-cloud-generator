@@ -68,7 +68,6 @@ button:hover {
     width: inherit;
     border-radius: 50%;
     color: dodgerblue;
-    border: 1px solid dodgerblue;
     padding: 50px;
 }
 #twenty {
@@ -86,9 +85,6 @@ button:hover {
 #seventy {
     font-size: 70px;
     opacity: 1;
-}
-p {
-    padding: 20px;
 }
 #loader {
     border: 16px solid #f3f3f3; /* Light grey */
